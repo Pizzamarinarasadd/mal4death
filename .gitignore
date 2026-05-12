@@ -1,0 +1,23 @@
+# Compiled game executable
+mal4death.exe
+malware_outbreak.exe
+
+# Test executables
+test_*.exe
+
+# Intermediate build artifacts
+samples/*.a
+samples/*.o
+
+# Generated per-build (run build.bat or make to regenerate)
+src/generated_keys.h
+keys.txt
+tools/keygen
+tools/keygen.exe
+
+# Windows artifacts
+*.pdb
+Thumbs.db
+
+# Local-only docs
+PRESENTATION.md
