@@ -5,7 +5,8 @@ Project developed for the presentation of a game about malware analysis at milan
 Did u ever try to learn more about malware analysis, but u found that pretty hard?
 Fear not! This is an introductory game apporach to learn just it in a different manner!
 
-Some FAQs
+Some FAQs        
+
 #Why?
 Before this project i read the never aging Practical Malware Analysis, and i found pretty interesting, yet useful the practical approach after each theory session, so thats why i decided to make a gamified version of it
 
