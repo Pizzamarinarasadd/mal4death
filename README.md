@@ -7,6 +7,8 @@ Project developed for the presentation of a game about malware analysis at milan
 Did u ever try to learn more about malware analysis, but u found that pretty hard?
 Fear not! This is an introductory game apporach to learn just it in a different manner!
 
+Note: Ida pro is not present in the tools
+
 Some FAQs        
 
 #Why?
