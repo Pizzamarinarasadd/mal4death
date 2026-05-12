@@ -18,6 +18,3 @@ tools/keygen.exe
 # Windows artifacts
 *.pdb
 Thumbs.db
-
-# Local-only docs
-PRESENTATION.md
