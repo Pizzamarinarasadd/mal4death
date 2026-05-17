@@ -304,8 +304,7 @@ static const char *PHASE_TEXTS[TOTAL_PHASES] = {
     "I'm Edwin, your Co-Chief, and you're the one in charge! We're scouting "
     "for a new place to live because Malus trashed our last home. We didn't "
     "quite wipe him out, and now he's out for blood. Let's get you up to speed!\n\n"
-    "Quick controls: [?] Request hint  |  [ESC] Dismiss popup\n"
-    "On Story Mode tools open automatically. "
+    "Quick controls: [F1] Tool Info  [F2] Hint  [F3] Surrender  [ESC] Dismiss popup\n"
     "On Hardcore you're on your own and there is no dialogue.",
 
     /* Phase 1 — UPX */
@@ -468,14 +467,14 @@ static void draw_phase_screen(void) {
         if (G.current_hint_idx < l->hint_count) {
             if (G.free_hints_left > 0) {
                 ui_set_color(COLOR_YELLOW);
-                ui_print_at(54, 11, "[?] Request Hint  ");
+                ui_print_at(54, 11, "[F2] Request Hint ");
             } else {
                 ui_set_color(COLOR_MAGENTA);
-                ui_print_at(54, 11, "[?] Hint  (-5 min)");
+                ui_print_at(54, 11, "[F2] Hint(-5 min) ");
             }
         }
         ui_set_color(COLOR_CYAN);
-        ui_print_at(54, 13, "[i] Tool Info");
+        ui_print_at(54, 13, "[F1] Tool Info");
         ui_set_color(COLOR_DEFAULT);
     }
 
@@ -531,7 +530,7 @@ static void draw_phase_screen(void) {
                 }
             }
             ui_set_color(COLOR_RED);
-            ui_print_at(54, 23, "[Q] Surrender");
+            ui_print_at(54, 23, "[F3] Surrender");
             ui_set_color(COLOR_DEFAULT);
         }
     }
@@ -724,19 +723,19 @@ static GameScreen screen_phase(void) {
             continue;
         }
 
-        if (ch == '?' && G.current_phase > 0 && G.key_input_len == 0) {
+        if (vk == VK_F2 && G.current_phase > 0) {
             phase_request_hint();
             continue;
         }
 
-        if ((ch == 'i' || ch == 'I') && G.current_phase > 0 && G.key_input_len == 0) {
+        if (vk == VK_F1 && G.current_phase > 0) {
             phase_show_info();
             enable_mouse_input(hIn);
             hints_redraw(&G.hint_popup);
             continue;
         }
 
-        if ((ch == 'q' || ch == 'Q') && G.current_phase > 0 && G.key_input_len == 0) {
+        if (vk == VK_F3 && G.current_phase > 0) {
             if (phase_confirm_surrender()) return GAME_OVER;
             enable_mouse_input(hIn);
             hints_redraw(&G.hint_popup);
