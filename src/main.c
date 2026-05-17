@@ -231,7 +231,20 @@ static GameScreen screen_menu(void) {
         if (rec.EventType == KEY_EVENT && rec.Event.KeyEvent.bKeyDown) {
             WORD vk = rec.Event.KeyEvent.wVirtualKeyCode;
             char ch = rec.Event.KeyEvent.uChar.AsciiChar;
-            if (ch == '1') return DIFFICULTY_SELECT;
+            if (ch == '1') {
+                if (prog_has_save && prog_saved_phase > 0) {
+                    Difficulty d  = (Difficulty)prog_saved_difficulty;
+                    G.difficulty      = d;
+                    G.diff_cfg        = get_difficulty_config(d);
+                    G.free_hints_left = G.diff_cfg.free_hints;
+                    G.continues_left  = (d == NEWBIE) ? 1 : 0;
+                    G.current_phase   = prog_saved_phase;
+                    timer_init(&G.timer, dev_effective_timer(d));
+                    timer_start(&G.timer);
+                    return PHASE;
+                }
+                return DIFFICULTY_SELECT;
+            }
             if ((ch == 'r' || ch == 'R') && prog_has_save && prog_saved_phase >= 2) {
                 progress_reset();
                 draw_menu();
