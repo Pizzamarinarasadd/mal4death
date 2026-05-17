@@ -19,7 +19,9 @@
 
 static int  prog_completed[3] = {0, 0, 0};
 static char prog_save_path[MAX_PATH];
-static int  prog_has_save = 0; /* 1 if save.dat existed at launch */
+static int  prog_has_save         = 0;
+static int  prog_saved_phase      = 0;
+static int  prog_saved_difficulty = 0;
 
 static void progress_load(void) {
     char exe_dir[MAX_PATH];
@@ -33,20 +35,33 @@ static void progress_load(void) {
     if (!f) return;
     prog_has_save = 1;
     char buf[8] = {0};
-    fread(buf, 1, 3, f);
+    int  n = (int)fread(buf, 1, 5, f);
     fclose(f);
     for (int i = 0; i < 3; i++)
         prog_completed[i] = (buf[i] == '1') ? 1 : 0;
+    if (n >= 5) {
+        prog_saved_difficulty = (buf[3] >= '0' && buf[3] <= '2') ? buf[3] - '0' : 0;
+        prog_saved_phase      = (buf[4] >= '0' && buf[4] <= '9') ? buf[4] - '0' : 0;
+    }
 }
 
 static void progress_save(void) {
     FILE *f = fopen(prog_save_path, "w");
     if (!f) return;
-    fprintf(f, "%c%c%c",
+    fprintf(f, "%c%c%c%c%c",
             prog_completed[0] ? '1' : '0',
             prog_completed[1] ? '1' : '0',
-            prog_completed[2] ? '1' : '0');
+            prog_completed[2] ? '1' : '0',
+            '0' + prog_saved_difficulty,
+            '0' + prog_saved_phase);
     fclose(f);
+}
+
+static void progress_save_run(int phase, int difficulty) {
+    prog_saved_phase      = phase;
+    prog_saved_difficulty = difficulty;
+    progress_save();
+    prog_has_save = 1;
 }
 
 static void progress_reset(void) {
@@ -57,6 +72,8 @@ static void progress_reset(void) {
 
 static void progress_mark_complete(Difficulty d) {
     if ((int)d >= 0 && (int)d < 3) prog_completed[(int)d] = 1;
+    prog_saved_phase      = 0;
+    prog_saved_difficulty = 0;
     progress_save();
 }
 
@@ -166,10 +183,20 @@ static void draw_menu(void) {
     int row = 13;
     ui_set_color(COLOR_DEFAULT);
     if (prog_has_save) {
-        ui_print_at(28, row++, "[1]  Continue");
-        ui_set_color(COLOR_RED);
-        ui_print_at(28, row++, "[R]  New Game  (resets progress)");
-        ui_set_color(COLOR_DEFAULT);
+        char cont_label[52];
+        if (prog_saved_phase > 0) {
+            const char *dn = prog_saved_difficulty == 0 ? "Story" : "Hardcore";
+            snprintf(cont_label, sizeof(cont_label), "[1]  Continue  (%s - phase %d/%d)",
+                     dn, prog_saved_phase, TOTAL_PHASES - 1);
+        } else {
+            snprintf(cont_label, sizeof(cont_label), "[1]  Continue");
+        }
+        ui_print_at(28, row++, cont_label);
+        if (prog_saved_phase >= 2) {
+            ui_set_color(COLOR_RED);
+            ui_print_at(28, row++, "[R]  New Game  (resets progress)");
+            ui_set_color(COLOR_DEFAULT);
+        }
     } else {
         ui_print_at(28, row++, "[1]  New Game");
     }
@@ -205,7 +232,7 @@ static GameScreen screen_menu(void) {
             WORD vk = rec.Event.KeyEvent.wVirtualKeyCode;
             char ch = rec.Event.KeyEvent.uChar.AsciiChar;
             if (ch == '1') return DIFFICULTY_SELECT;
-            if ((ch == 'r' || ch == 'R') && prog_has_save) {
+            if ((ch == 'r' || ch == 'R') && prog_has_save && prog_saved_phase >= 2) {
                 progress_reset();
                 draw_menu();
                 continue;
@@ -606,8 +633,7 @@ static int phase_confirm_surrender(void) {
         if (rec.EventType != KEY_EVENT || !rec.Event.KeyEvent.bKeyDown) continue;
         char ch = rec.Event.KeyEvent.uChar.AsciiChar;
         if (ch == 'y' || ch == 'Y') {
-            progress_save();
-            prog_has_save = 1;
+            progress_save_run(G.current_phase, (int)G.difficulty);
             return 1;
         }
         if (ch == 'n' || ch == 'N' ||
@@ -1384,8 +1410,7 @@ static GameScreen screen_game_over(void) {
     do {
         ReadConsoleInputA(hIn, &rec, 1, &nread);
     } while (rec.EventType != KEY_EVENT || !rec.Event.KeyEvent.bKeyDown);
-    progress_save();
-    prog_has_save = 1;
+    progress_save_run(G.current_phase, (int)G.difficulty);
     audio_play();
     return MENU;
 }
