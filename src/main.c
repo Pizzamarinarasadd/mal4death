@@ -101,6 +101,11 @@ static GameState G;
 
 /* ── Helpers ───────────────────────────────────────────────────────────── */
 
+static void enable_mouse_input(HANDLE hIn) {
+    SetConsoleMode(hIn, ENABLE_PROCESSED_INPUT | ENABLE_MOUSE_INPUT |
+                        ENABLE_EXTENDED_FLAGS | ENABLE_WINDOW_INPUT);
+}
+
 static void format_time(int seconds, char *buf, int buf_size) {
     snprintf(buf, buf_size, "%02d:%02d", seconds / 60, seconds % 60);
 }
@@ -189,7 +194,7 @@ static void draw_menu(void) {
 static GameScreen screen_menu(void) {
     draw_menu();
     HANDLE hIn = GetStdHandle(STD_INPUT_HANDLE);
-    SetConsoleMode(hIn, ENABLE_PROCESSED_INPUT | ENABLE_MOUSE_INPUT | ENABLE_EXTENDED_FLAGS | ENABLE_WINDOW_INPUT);
+    enable_mouse_input(hIn);
     while (1) {
         INPUT_RECORD rec;
         DWORD nread;
@@ -535,6 +540,7 @@ static void phase_request_hint(void) {
     } else {
         timer_apply_speedup(&G.timer, G.diff_cfg.speedup_mult);
     }
+    draw_phase_screen();
     hints_show(&G.hint_popup, l->hints[G.current_hint_idx]);
     G.current_hint_idx++;
     G.hints_used++;
@@ -608,10 +614,11 @@ static GameScreen screen_phase(void) {
     }
 
     HANDLE hIn = GetStdHandle(STD_INPUT_HANDLE);
-    SetConsoleMode(hIn, ENABLE_PROCESSED_INPUT | ENABLE_MOUSE_INPUT | ENABLE_EXTENDED_FLAGS | ENABLE_WINDOW_INPUT);
+    enable_mouse_input(hIn);
 
     if (!G.dev_skip_lore && G.difficulty != HARDCORE)
         show_phase_text(G.current_phase);
+    enable_mouse_input(hIn);
 
     if (G.current_phase == 0) {
         timer_start(&G.timer);
@@ -641,7 +648,11 @@ static GameScreen screen_phase(void) {
         DWORD nread;
         ReadConsoleInputA(hIn, &rec, 1, &nread);
 
-        if (rec.EventType == WINDOW_BUFFER_SIZE_EVENT) { draw_phase_screen(); continue; }
+        if (rec.EventType == WINDOW_BUFFER_SIZE_EVENT) {
+            draw_phase_screen();
+            hints_redraw(&G.hint_popup);
+            continue;
+        }
 
         if (rec.EventType == MOUSE_EVENT) {
             hints_update_hover(&G.hint_popup,
@@ -663,17 +674,20 @@ static GameScreen screen_phase(void) {
 
         if (ch == '?' && G.current_phase > 0) {
             phase_request_hint();
-            draw_phase_screen();
             continue;
         }
 
         if ((ch == 'i' || ch == 'I') && G.current_phase > 0) {
             phase_show_info();
+            enable_mouse_input(hIn);
+            hints_redraw(&G.hint_popup);
             continue;
         }
 
         if ((ch == 'q' || ch == 'Q') && G.current_phase > 0) {
             if (phase_confirm_surrender()) return GAME_OVER;
+            enable_mouse_input(hIn);
+            hints_redraw(&G.hint_popup);
             continue;
         }
 
@@ -1209,10 +1223,10 @@ static GameScreen screen_win(void) {
 
     /* Title */
     ui_set_color(COLOR_GREEN);
-    ui_print_at(16, 5, " __   __ ___  ____  ____  ___  ____  _  _ ");
-    ui_print_at(16, 6, " \\ \\ / //  _)(  __)(  _ \\/ _ \\(  _ \\( \\/ )");
-    ui_print_at(16, 7, "  \\ V / | |__ | |__  )   /\\_, / )   / )  /");
-    ui_print_at(16, 8, "   \\_/  \\____)(____)(__)  (___/(__\\_)(__/ ");
+    ui_print_at(22, 5, "__   _____ ___ _____ ___  _____   __");
+    ui_print_at(22, 6, "\\ \\ / /_ _/ __|_   _/ _ \\| _ \\ \\ / /");
+    ui_print_at(22, 7, " \\ V / | | (__  | || (_) |   /\\ V / ");
+    ui_print_at(22, 8, "  \\_/ |___\\___| |_| \\___/|_|_\\ |_|  ");
 
     /* Quote */
     ui_set_color(COLOR_CYAN);

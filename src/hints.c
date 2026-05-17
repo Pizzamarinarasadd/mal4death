@@ -100,6 +100,13 @@ void hints_update_hover(HintPopup *hp, int mouse_x, int mouse_y) {
     LeaveCriticalSection(&hp->lock);
 }
 
+void hints_redraw(HintPopup *hp) {
+    EnterCriticalSection(&hp->lock);
+    int active = hp->active;
+    LeaveCriticalSection(&hp->lock);
+    if (active) draw_hint_popup(hp);
+}
+
 void hints_destroy(HintPopup *hp) {
     hints_dismiss(hp);
     DeleteCriticalSection(&hp->lock);

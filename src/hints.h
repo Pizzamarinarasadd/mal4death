@@ -18,6 +18,7 @@ void hints_init(HintPopup *hp);
 void hints_show(HintPopup *hp, const char *text);
 void hints_dismiss(HintPopup *hp);
 void hints_update_hover(HintPopup *hp, int mouse_x, int mouse_y);
+void hints_redraw(HintPopup *hp);
 void hints_destroy(HintPopup *hp);
 
 #endif
