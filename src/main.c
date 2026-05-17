@@ -506,7 +506,9 @@ static void draw_phase_screen(void) {
 
             if (G.wrong_answer) {
                 ui_set_color(COLOR_RED);
-                ui_print_at(54, 20, "Wrong! -5 min penalty.");
+                ui_print_at(54, 20, G.difficulty == NEWBIE
+                    ? "Wrong! Speed x1.2     "
+                    : "Wrong! Speed x2.5     ");
             }
             {
                 const char *dk = (G.difficulty == HARDCORE && l->expected_key_hard)
@@ -533,7 +535,9 @@ static void redraw_input(void) {
     snprintf(line, sizeof(line), "> %-23s", shown);
     ui_set_color(COLOR_DEFAULT);
     ui_print_at(54, 18, line);
-    ui_print_at(54, 20, G.wrong_answer ? "Wrong! -5 min penalty." : "                      ");
+    ui_print_at(54, 20, G.wrong_answer
+        ? (G.difficulty == NEWBIE ? "Wrong! Speed x1.2     " : "Wrong! Speed x2.5     ")
+        : "                      ");
 }
 
 static void phase_request_hint(void) {
@@ -719,7 +723,7 @@ static GameScreen screen_phase(void) {
                 return PHASE;
             } else {
                 G.wrong_answer = 1;
-                timer_penalize(&G.timer, 300);
+                timer_apply_speedup(&G.timer, G.difficulty == NEWBIE ? 1.2f : 2.5f);
                 draw_phase_screen();
             }
             continue;
