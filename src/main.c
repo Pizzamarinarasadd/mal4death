@@ -240,7 +240,7 @@ static void draw_difficulty(void) {
         ui_set_color(COLOR_DEFAULT);
         format_time(dev_effective_timer(NEWBIE), tbuf, sizeof(tbuf));
         snprintf(line, sizeof(line),
-                 "     Time: %s  |  Hints: 3  |  Wrong answer: -5 min", tbuf);
+                 "     Time: %s  |  Hints: 3  |  Wrong answer: speed x1.25", tbuf);
         ui_print_at(8, 8, line);
 
         ui_set_color(COLOR_RED);
@@ -248,7 +248,7 @@ static void draw_difficulty(void) {
         ui_set_color(COLOR_DEFAULT);
         format_time(dev_effective_timer(HARDCORE), tbuf, sizeof(tbuf));
         snprintf(line, sizeof(line),
-                 "     Time: %s  |  Hints: 0  |  Wrong answer: -5 min", tbuf);
+                 "     Time: %s  |  Hints: 0  |  Wrong answer: speed x2.5", tbuf);
         ui_print_at(8, 16, line);
         ui_set_color(COLOR_YELLOW);
         ui_print_at(8, 17, "     No dialogue. You are on your own.");
@@ -261,7 +261,7 @@ static void draw_difficulty(void) {
         ui_set_color(COLOR_DEFAULT);
         format_time(dev_effective_timer(NEWBIE), tbuf, sizeof(tbuf));
         snprintf(line, sizeof(line),
-                 "     Time: %s  |  Hints: 3  |  Wrong answer: -5 min", tbuf);
+                 "     Time: %s  |  Hints: 3  |  Wrong answer: speed x1.25", tbuf);
         ui_print_at(8, 6, line);
     }
 }
