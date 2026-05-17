@@ -724,19 +724,19 @@ static GameScreen screen_phase(void) {
             continue;
         }
 
-        if (ch == '?' && G.current_phase > 0) {
+        if (ch == '?' && G.current_phase > 0 && G.key_input_len == 0) {
             phase_request_hint();
             continue;
         }
 
-        if ((ch == 'i' || ch == 'I') && G.current_phase > 0) {
+        if ((ch == 'i' || ch == 'I') && G.current_phase > 0 && G.key_input_len == 0) {
             phase_show_info();
             enable_mouse_input(hIn);
             hints_redraw(&G.hint_popup);
             continue;
         }
 
-        if ((ch == 'q' || ch == 'Q') && G.current_phase > 0) {
+        if ((ch == 'q' || ch == 'Q') && G.current_phase > 0 && G.key_input_len == 0) {
             if (phase_confirm_surrender()) return GAME_OVER;
             enable_mouse_input(hIn);
             hints_redraw(&G.hint_popup);
