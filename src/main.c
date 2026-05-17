@@ -455,8 +455,15 @@ static void draw_phase_screen(void) {
     ui_print_at(54, 8,  buf_diff);
     ui_print_at(54, 9,  buf_hints);
     if (G.current_phase > 0) {
-        ui_set_color(COLOR_YELLOW);
-        ui_print_at(54, 11, "[?] Request Hint");
+        if (G.current_hint_idx < l->hint_count) {
+            if (G.free_hints_left > 0) {
+                ui_set_color(COLOR_YELLOW);
+                ui_print_at(54, 11, "[?] Request Hint  ");
+            } else {
+                ui_set_color(COLOR_MAGENTA);
+                ui_print_at(54, 11, "[?] Hint  (-5 min)");
+            }
+        }
         ui_set_color(COLOR_CYAN);
         ui_print_at(54, 13, "[i] Tool Info");
         ui_set_color(COLOR_DEFAULT);
@@ -538,7 +545,7 @@ static void phase_request_hint(void) {
     if (G.free_hints_left > 0) {
         G.free_hints_left--;
     } else {
-        timer_apply_speedup(&G.timer, G.diff_cfg.speedup_mult);
+        timer_penalize(&G.timer, 300);
     }
     draw_phase_screen();
     hints_show(&G.hint_popup, l->hints[G.current_hint_idx]);
@@ -606,12 +613,6 @@ static GameScreen screen_phase(void) {
     G.key_input_len    = 0;
     G.wrong_answer     = 0;
     G.current_hint_idx = 0;
-
-    if (G.current_phase > 0) {
-        const char *sp = (G.difficulty == HARDCORE && l->sample_path_hard)
-                         ? l->sample_path_hard : l->sample_path;
-        tools_launch(G.difficulty, l->tool_name, l->tool_path, sp);
-    }
 
     HANDLE hIn = GetStdHandle(STD_INPUT_HANDLE);
     enable_mouse_input(hIn);
