@@ -675,6 +675,7 @@ static GameScreen screen_phase(void) {
                 if (phase_show_continue()) {
                     G.continues_left--;
                     timer_continue(&G.timer, 600);
+                    enable_mouse_input(hIn);
                     draw_phase_screen();
                     continue;
                 }
