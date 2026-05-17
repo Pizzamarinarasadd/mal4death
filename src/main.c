@@ -723,7 +723,7 @@ static GameScreen screen_phase(void) {
                 return PHASE;
             } else {
                 G.wrong_answer = 1;
-                timer_set_speedup(&G.timer, G.difficulty == NEWBIE ? 1.25f : 2.5f);
+                timer_apply_speedup(&G.timer, G.difficulty == NEWBIE ? 1.25f : 2.5f);
                 draw_phase_screen();
             }
             continue;
