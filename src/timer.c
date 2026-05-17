@@ -89,6 +89,21 @@ void timer_penalize(Timer *t, int seconds) {
     LeaveCriticalSection(&t->lock);
 }
 
+void timer_continue(Timer *t, int seconds) {
+    if (t->thread) {
+        WaitForSingleObject(t->thread, 1000);
+        CloseHandle(t->thread);
+        t->thread = NULL;
+    }
+    EnterCriticalSection(&t->lock);
+    t->time_remaining = seconds;
+    t->speedup_mult   = 1.0f;
+    t->game_over      = 0;
+    t->running        = 1;
+    LeaveCriticalSection(&t->lock);
+    t->thread = CreateThread(NULL, 0, timer_thread, t, 0, NULL);
+}
+
 void timer_destroy(Timer *t) {
     if (!t->initialized) return;
     timer_stop(t);

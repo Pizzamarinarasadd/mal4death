@@ -20,6 +20,7 @@ int   timer_get_remaining(Timer *t);
 void  timer_apply_speedup(Timer *t, float mult);
 void  timer_set_speedup(Timer *t, float mult);
 void  timer_penalize(Timer *t, int seconds);
+void  timer_continue(Timer *t, int seconds);
 void  timer_destroy(Timer *t);
 
 #endif

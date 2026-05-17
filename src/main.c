@@ -88,6 +88,7 @@ typedef struct {
     char             key_input[128];
     int              key_input_len;
     int              wrong_answer;
+    int              continues_left;
     /* developer options */
     int              dev_presentation;   /* 0=off, 1=on: shows [S] skip button */
     int              dev_show_keys;      /* 0=off, 1=on: shows expected key on phase screen */
@@ -286,6 +287,7 @@ static GameScreen screen_difficulty(void) {
             G.difficulty      = d;
             G.diff_cfg        = get_difficulty_config(d);
             G.free_hints_left = G.diff_cfg.free_hints;
+            G.continues_left  = (d == NEWBIE) ? 1 : 0;
             int t = dev_effective_timer(d);
             timer_init(&G.timer, t);
             return PHASE;
@@ -454,6 +456,14 @@ static void draw_phase_screen(void) {
     ui_print_at(54, 7,  buf_time);
     ui_print_at(54, 8,  buf_diff);
     ui_print_at(54, 9,  buf_hints);
+    if (G.difficulty == NEWBIE) {
+        char buf_cont[32];
+        if (G.continues_left > 0)
+            snprintf(buf_cont, sizeof(buf_cont), "Cont:  %d left   ", G.continues_left);
+        else
+            snprintf(buf_cont, sizeof(buf_cont), "Cont:  none      ");
+        ui_print_at(54, 10, buf_cont);
+    }
     if (G.current_phase > 0) {
         if (G.current_hint_idx < l->hint_count) {
             if (G.free_hints_left > 0) {
@@ -609,6 +619,31 @@ static int phase_confirm_surrender(void) {
     }
 }
 
+static int phase_show_continue(void) {
+    ui_set_color(COLOR_YELLOW);
+    ui_draw_box(15, 10, 50, 11, "CONTINUE?");
+    ui_set_color(COLOR_WHITE);
+    ui_print_at(18, 12, "The timer ran out, Chief!");
+    ui_print_at(18, 14, "Use your continue?  (+10 min, speed resets)");
+    ui_set_color(COLOR_CYAN);
+    ui_print_at(18, 15, "(1 continue remaining)");
+    ui_set_color(COLOR_YELLOW);
+    ui_print_at(23, 17, "[Y] Yes     [N] No");
+    ui_set_color(COLOR_DEFAULT);
+    HANDLE hIn = GetStdHandle(STD_INPUT_HANDLE);
+    SetConsoleMode(hIn, ENABLE_PROCESSED_INPUT | ENABLE_EXTENDED_FLAGS);
+    FlushConsoleInputBuffer(hIn);
+    INPUT_RECORD rec; DWORD nread;
+    while (1) {
+        ReadConsoleInputA(hIn, &rec, 1, &nread);
+        if (rec.EventType != KEY_EVENT || !rec.Event.KeyEvent.bKeyDown) continue;
+        char ch = rec.Event.KeyEvent.uChar.AsciiChar;
+        if (ch == 'y' || ch == 'Y') return 1;
+        if (ch == 'n' || ch == 'N' ||
+            rec.Event.KeyEvent.wVirtualKeyCode == VK_ESCAPE) return 0;
+    }
+}
+
 static GameScreen screen_phase(void) {
     const Level *l = get_level(G.current_phase);
     if (!l) return GAME_OVER;
@@ -634,7 +669,18 @@ static GameScreen screen_phase(void) {
     draw_phase_screen();
 
     while (1) {
-        if (G.timer.game_over) return GAME_OVER;
+        if (G.timer.game_over) {
+            if (G.difficulty == NEWBIE && G.continues_left > 0) {
+                hints_dismiss(&G.hint_popup);
+                if (phase_show_continue()) {
+                    G.continues_left--;
+                    timer_continue(&G.timer, 600);
+                    draw_phase_screen();
+                    continue;
+                }
+            }
+            return GAME_OVER;
+        }
 
         DWORD events;
         GetNumberOfConsoleInputEvents(hIn, &events);
@@ -1386,6 +1432,7 @@ int main(void) {
             G.current_phase      = 0;
             G.hints_used         = 0;
             G.free_hints_left    = 0;
+            G.continues_left     = 0;
             G.key_input[0]       = '\0';
             G.key_input_len      = 0;
             G.wrong_answer       = 0;
