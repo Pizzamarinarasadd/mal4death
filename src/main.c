@@ -507,7 +507,7 @@ static void draw_phase_screen(void) {
             if (G.wrong_answer) {
                 ui_set_color(COLOR_RED);
                 ui_print_at(54, 20, G.difficulty == NEWBIE
-                    ? "Wrong! Speed x1.2     "
+                    ? "Wrong! Speed x1.25   "
                     : "Wrong! Speed x2.5     ");
             }
             {
@@ -536,7 +536,7 @@ static void redraw_input(void) {
     ui_set_color(COLOR_DEFAULT);
     ui_print_at(54, 18, line);
     ui_print_at(54, 20, G.wrong_answer
-        ? (G.difficulty == NEWBIE ? "Wrong! Speed x1.2     " : "Wrong! Speed x2.5     ")
+        ? (G.difficulty == NEWBIE ? "Wrong! Speed x1.25   " : "Wrong! Speed x2.5     ")
         : "                      ");
 }
 
@@ -723,7 +723,7 @@ static GameScreen screen_phase(void) {
                 return PHASE;
             } else {
                 G.wrong_answer = 1;
-                timer_apply_speedup(&G.timer, G.difficulty == NEWBIE ? 1.2f : 2.5f);
+                timer_set_speedup(&G.timer, G.difficulty == NEWBIE ? 1.25f : 2.5f);
                 draw_phase_screen();
             }
             continue;

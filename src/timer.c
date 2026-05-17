@@ -72,6 +72,12 @@ void timer_apply_speedup(Timer *t, float mult) {
     LeaveCriticalSection(&t->lock);
 }
 
+void timer_set_speedup(Timer *t, float mult) {
+    EnterCriticalSection(&t->lock);
+    t->speedup_mult = mult;
+    LeaveCriticalSection(&t->lock);
+}
+
 void timer_penalize(Timer *t, int seconds) {
     EnterCriticalSection(&t->lock);
     t->time_remaining -= seconds;
